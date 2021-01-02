@@ -1,8 +1,13 @@
 import sys
+import pandas as pd
 
 
 def load_data(messages_filepath, categories_filepath):
-    pass
+
+    pd.read_csv(messages_filepath)
+    pd.read_csv(categories_filepath)
+    df = pd.merge(messages,categories,on='id')
+    return df 
 
 
 def clean_data(df):
