@@ -11,11 +11,15 @@ def load_data(messages_filepath, categories_filepath):
 
 
 def clean_data(df):
-    pass
+    categories = df['categories'].str.split(pat=';', expand=True)
+
 
 
 def save_data(df, database_filename):
-    pass  
+    engine = create_engine('sqlite:///'+ database_filename +'.db')
+    table_name = database_filename + "_table"
+    df.to_sql(table_name, engine, index=False, if_exists='replace')
+  
 
 
 def main():
