@@ -8,10 +8,17 @@ def load_data(messages_filepath, categories_filepath):
     pd.read_csv(categories_filepath)
     df = pd.merge(messages,categories,on='id')
     return df 
-
+ 
 
 def clean_data(df):
     categories = df['categories'].str.split(pat=';', expand=True)
+    row = categories.iloc[[1]]
+
+# use this row to extract a list of new column names for categories.
+# one way is to apply a lambda function that takes everything 
+# up to the second to last character of each string with slicing
+    category_colnames = [category_name.split('-')[0] for category_name in row.values[0]]
+
 
 
 
