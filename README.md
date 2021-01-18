@@ -12,3 +12,10 @@
     `python run.py`
 
 3. Go to http://0.0.0.0:3001/
+
+
+
+### Resources
+https://stackoverflow.com/questions/6718633/python-regular-expression-again-match-url
+https://gist.github.com/gruber/8891611
+https://www.geeksforgeeks.org/removing-stop-words-nltk-python/

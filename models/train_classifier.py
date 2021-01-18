@@ -2,77 +2,61 @@ import sys
 
 
 def load_data(database_filepath):
-        """
-    Load Data from the Database Function
-    
-    Arguments:
-        database_filepath -> Path to SQLite destination database (e.g. disaster_response_db.db)
-    Output:
-        X -> a dataframe containing features
-        Y -> a dataframe containing labels
-        category_names -> List of categories name
-    """
-    
     engine = create_engine('sqlite:///' + database_filepath)
     table_name = os.path.basename(database_filepath).replace(".db","") + "_table"
     df = pd.read_sql_table(table_name,engine)
-    
-    #Remove child alone as it has all zeros only
-    df = df.drop(['child_alone'],axis=1)
-    
-    # Given value 2 in the related field are neglible so it could be error. Replacing 2 with 1 to consider it a valid response.
-    # Alternatively, we could have assumed it to be 0 also. In the absence of information I have gone with majority class.
-    df['related']=df['related'].map(lambda x: 1 if x == 2 else x)
-    
     X = df['message']
     y = df.iloc[:,4:]
+    category_names = meta.columns
+    return X, y, category_names   
     
-    #print(X)
-    #print(y.columns)
-    category_names = y.columns # This will be used for visualization purpose
-    return X, y, category_name
+
 
 def tokenize(text):
-        """
-    Tokenize the text function
-    
-    Arguments:
-        text -> Text message which needs to be tokenized
-    Output:
-        clean_tokens -> List of tokens extracted from the provided text
-    """
-    
-    # Replace all urls with a urlplaceholder string
-    url_regex = 'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+'
-    
-    # Extract all the urls from the provided text 
-    detected_urls = re.findall(url_regex, text)
-    
-    # Replace url with a url placeholder string
-    for detected_url in detected_urls:
-        text = text.replace(detected_url, url_place_holder_string)
-
-    # Extract the word tokens from the provided text
-    tokens = nltk.word_tokenize(text)
-    
-    #Lemmanitizer to remove inflectional and derivationally related forms of a word
-    lemmatizer = nltk.WordNetLemmatizer()
-
-    # List of clean tokens
-    clean_tokens = [lemmatizer.lemmatize(w).lower().strip() for w in tokens]
-    return clean_tokens
+    # Tokenize the data
+    tokens = word_tokenize(text)
+    # Normalize words
+    tokens = [token.lower() for token in tokens]
+    # Remove stop words
+    stop_words = set(stopwords.words('english'))  
+    tokens = [w for w in tokens if not w in stop_words]  
+    # Lemmatize words
+    tokens = [WordNetLemmatizer().lemmatize(token) for token in tokens]
+    return tokens
 
 
 def build_model():
-    pass
+    pipeline = Pipeline([
+        ('vect', CountVectorizer()),
+        ('tfidf', TfidfTransformer()),
+        ('clf', MultiOutputClassifier(RandomForestClassifier()))])
+
+    parameters = {
+        'tfidf__use_idf': (True, False),
+        'clf__estimator__n_estimators': [50, 60, 70]
+    }
+
+    model = GridSearchCV(estimator=pipeline, param_grid=parameters)    
+
+    return model
 
 
 def evaluate_model(model, X_test, Y_test, category_names):
-    pass
+    
+    # predict
+    y_pred = model.predict(X_test)
+
+    # print classification report
+    print(classification_report(Y_test.values, y_pred, target_names=category_names))
+
+    # print accuracy score
+    print('Accuracy: {}'.format(np.mean(Y_test.values == y_pred)))
+
 
 
 def save_model(model, model_filepath):
-    pass
+    # save model to pickle file
+    pickle.dump(model, open(model_filepath, 'wb'))
 
 
 def main():
