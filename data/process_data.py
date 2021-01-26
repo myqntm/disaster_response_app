@@ -1,11 +1,13 @@
 import sys
 import pandas as pd
+from sqlalchemy import create_engine
+
 
 
 def load_data(messages_filepath, categories_filepath):
 
-    pd.read_csv(messages_filepath)
-    pd.read_csv(categories_filepath)
+    messages = pd.read_csv(messages_filepath)
+    categories = pd.read_csv(categories_filepath)
     df = pd.merge(messages,categories,on='id')
     return df 
  
@@ -14,14 +16,11 @@ def clean_data(df):
     categories = df['categories'].str.split(pat=';', expand=True)
     row = categories.iloc[[1]]
     category_colnames = [category_name.split('-')[0] for category_name in row.values[0]]
-
-
-
+    return df
 
 def save_data(df, database_filename):
-    engine = create_engine('sqlite:///'+ database_filename +'.db')
-    table_name = database_filename + "_table"
-    df.to_sql(table_name, engine, index=False, if_exists='replace')
+    engine = create_engine('sqlite:///'+ database_filename)
+    df.to_sql('DisasterResponse_Table', engine, index=False, if_exists='replace')
   
 
 

@@ -1,13 +1,25 @@
-import sys
-
+import sys, pickle, re
+import pandas as pd
+import numpy as np
+import nltk
+from nltk.tokenize import word_tokenize
+from nltk.stem import WordNetLemmatizer
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.multioutput import MultiOutputClassifier
+from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
+from sklearn.pipeline import Pipeline
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import classification_report
+from sklearn.model_selection import GridSearchCV
+from sqlalchemy import create_engine
+#nltk.download(['punkt', 'wordnet'])
 
 def load_data(database_filepath):
     engine = create_engine('sqlite:///' + database_filepath)
-    table_name = os.path.basename(database_filepath).replace(".db","") + "_table"
-    df = pd.read_sql_table(table_name,engine)
+    df = pd.read_sql_table('DisasterResponse_Table', engine)
     X = df['message']
     y = df.iloc[:,4:]
-    category_names = meta.columns
+    category_names = y.columns
     return X, y, category_names   
     
 
