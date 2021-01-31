@@ -1,27 +1,33 @@
-import sys, pickle, re
-import pandas as pd
-import numpy as np
-import nltk
-from nltk.tokenize import word_tokenize
+from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
+from nltk.tokenize import word_tokenize
+import numpy as np
+import pandas as pd
+import pickle
+from pprint import pprint
+import re
+import sys
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.multioutput import MultiOutputClassifier
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
-from sklearn.pipeline import Pipeline
-from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report
-from sklearn.model_selection import GridSearchCV
+from sklearn.model_selection import GridSearchCV, train_test_split
+from sklearn.multiclass import OneVsRestClassifier
+from sklearn.multioutput import MultiOutputClassifier
+from sklearn.pipeline import Pipeline
+from sklearn.svm import LinearSVC
 from sqlalchemy import create_engine
-#nltk.download(['punkt', 'wordnet'])
+import time
+import warnings
+warnings.filterwarnings('ignore')
+
 
 def load_data(database_filepath):
     engine = create_engine('sqlite:///' + database_filepath)
     df = pd.read_sql_table('DisasterResponse_Table', engine)
     X = df['message']
     y = df.iloc[:,4:]
-    category_names = y.columns
+    category_names = y.columns.tolist()
     return X, y, category_names   
-    
 
 
 def tokenize(text):
@@ -42,14 +48,11 @@ def build_model():
         ('vect', CountVectorizer()),
         ('tfidf', TfidfTransformer()),
         ('clf', MultiOutputClassifier(RandomForestClassifier()))])
-
+    
     parameters = {
-        'tfidf__use_idf': (True, False),
-        'clf__estimator__n_estimators': [50, 60, 70]
-    }
-
-    model = GridSearchCV(estimator=pipeline, param_grid=parameters)    
-
+        'clf__estimator__n_estimators': [50, 100]
+        } 
+    model = GridSearchCV(pipeline, param_grid=parameters)    
     return model
 
 
@@ -76,7 +79,7 @@ def main():
         database_filepath, model_filepath = sys.argv[1:]
         print('Loading data...\n    DATABASE: {}'.format(database_filepath))
         X, Y, category_names = load_data(database_filepath)
-        X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2)
+        X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.33)
         
         print('Building model...')
         model = build_model()
@@ -101,3 +104,9 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+
+# X, Y, category_names = load_data('data/DisasterResponse.db')
+# X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.33)
+# model = build_model()
+# model.fit(X_train, Y_train)
