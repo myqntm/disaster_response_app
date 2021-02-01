@@ -1,27 +1,38 @@
-from nltk.corpus import stopwords
-from nltk.stem import WordNetLemmatizer
-from nltk.tokenize import word_tokenize
-import numpy as np
-import pandas as pd
-import pickle
-from pprint import pprint
-import re
 import sys
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
-from sklearn.metrics import classification_report
-from sklearn.model_selection import GridSearchCV, train_test_split
-from sklearn.multiclass import OneVsRestClassifier
-from sklearn.multioutput import MultiOutputClassifier
-from sklearn.pipeline import Pipeline
-from sklearn.svm import LinearSVC
+
+import pandas as pd
 from sqlalchemy import create_engine
-import time
+from sklearn.model_selection import train_test_split
+from sklearn.pipeline import Pipeline
+from nltk.stem import WordNetLemmatizer
+from nltk.corpus import stopwords
+from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
+from sklearn.multioutput import MultiOutputClassifier
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import GridSearchCV
+from nltk.tokenize import word_tokenize
+from sklearn.metrics import classification_report
+
+
+
+
+import numpy as np
+import nltk
+from nltk.tokenize import word_tokenize
+
+import re
+from sklearn.ensemble import AdaBoostClassifier
+import pickle
 import warnings
 warnings.filterwarnings('ignore')
 
 
 def load_data(database_filepath):
+    '''
+    Function to that loads the database
+    Input: sql database
+    Output: messages, categories and category names
+    '''
     engine = create_engine('sqlite:///' + database_filepath)
     df = pd.read_sql_table('DisasterResponse_Table', engine)
     X = df['message']
@@ -31,46 +42,57 @@ def load_data(database_filepath):
 
 
 def tokenize(text):
-    # Tokenize the data
+    '''
+    Function that normalizes, removes stop words and tokenizes text
+    Input: text content
+    Output: tokenize text
+    '''
     tokens = word_tokenize(text)
-    # Normalize words
     tokens = [token.lower() for token in tokens]
-    # Remove stop words
     stop_words = set(stopwords.words('english'))  
     tokens = [w for w in tokens if not w in stop_words]  
-    # Lemmatize words
     tokens = [WordNetLemmatizer().lemmatize(token) for token in tokens]
     return tokens
 
 
 def build_model():
+    '''
+    Function that builds the model
+    Input: none
+    Output: machine learning model
+    '''
     pipeline = Pipeline([
-        ('vect', CountVectorizer()),
+        ('vect', CountVectorizer(tokenizer=tokenize)),
         ('tfidf', TfidfTransformer()),
         ('clf', MultiOutputClassifier(RandomForestClassifier()))])
-    
-    parameters = {
-        'clf__estimator__n_estimators': [50, 100]
-        } 
-    model = GridSearchCV(pipeline, param_grid=parameters)    
+    parameters = {'tfidf__use_idf': (True, False), 'clf__estimator__n_estimators': [50, 60, 70]
+    }
+    model = GridSearchCV(pipeline, param_grid=parameters)
     return model
 
 
 def evaluate_model(model, X_test, Y_test, category_names):
-    
-    # predict
+    '''
+    Function that evaluates the model
+    Input: model, X_test, Y_test, category_names
+    Output: model classification and accuracy
+    '''
     y_pred = model.predict(X_test)
-
-    # print classification report
-    print(classification_report(Y_test.values, y_pred, target_names=category_names))
-
-    # print accuracy score
-    print('Accuracy: {}'.format(np.mean(Y_test.values == y_pred)))
-
+    i = 0
+    for col in Y_test:
+        print('Feature {}: {}'.format(i + 1, col))
+        print(classification_report(Y_test[col], y_pred[:, i]))
+        i = i + 1
+    accuracy = (y_pred == Y_test.values).mean()
+    print('The model accuracy is {:.3f}'.format(accuracy))
 
 
 def save_model(model, model_filepath):
-    # save model to pickle file
+    '''
+    Function that evaluates the model
+    Input: model, X_test, Y_test, category_names
+    Output: save model to pickle file
+    '''
     pickle.dump(model, open(model_filepath, 'wb'))
 
 
@@ -79,7 +101,7 @@ def main():
         database_filepath, model_filepath = sys.argv[1:]
         print('Loading data...\n    DATABASE: {}'.format(database_filepath))
         X, Y, category_names = load_data(database_filepath)
-        X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.33)
+        X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2)
         
         print('Building model...')
         model = build_model()
@@ -106,7 +128,5 @@ if __name__ == '__main__':
     main()
 
 
-# X, Y, category_names = load_data('data/DisasterResponse.db')
-# X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.33)
-# model = build_model()
-# model.fit(X_train, Y_train)
+
+database_filepath = '/Users/cathyr/github/ds_nanodegree/disaster_response_app/data/DisasterResponse.db'

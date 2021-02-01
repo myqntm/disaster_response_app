@@ -6,6 +6,11 @@ import numpy as np
 
 
 def load_data(messages_filepath, categories_filepath):
+    '''
+    Function to load the data
+    Input: messages file path, categories file path
+    Output: Returns the merged dataframe
+    '''
     messages = pd.read_csv(messages_filepath)
     categories = pd.read_csv(categories_filepath)
     df = pd.merge(messages,categories,on='id')
@@ -13,6 +18,11 @@ def load_data(messages_filepath, categories_filepath):
  
 
 def clean_data(df):
+    '''
+    Function to clean the data
+    Input: merged dataframe
+    Output: Returns a cleaned dataframe with categories split into columns
+    '''
     categories = df['categories'].str.split(pat=';', expand=True)
     row = categories.iloc[[1]]
     category_colnames = [category_name.split('-')[0] for category_name in row.values[0]]
@@ -27,6 +37,11 @@ def clean_data(df):
     return df
 
 def save_data(df, database_filename):
+    '''
+    Function to clean the data
+    Input: merged dataframe
+    Output: Returns a cleaned dataframe with categories split into columns
+    '''
     engine = create_engine('sqlite:///'+ database_filename)
     df.to_sql('DisasterResponse_Table', engine, index=False, if_exists='replace')
   
