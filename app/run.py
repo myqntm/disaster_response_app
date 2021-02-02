@@ -27,7 +27,7 @@ def tokenize(text):
 
 # load data
 engine = create_engine('sqlite:///../data/DisasterResponse.db')
-df = pd.read_sql_table('messages_categories', engine)
+df = pd.read_sql_table('DisasterResponse_Table', engine)
 
 # load model
 model = joblib.load("../models/classifier.pkl")
@@ -42,7 +42,19 @@ def index():
     # TODO: Below is an example - modify to extract data for your own visuals
     genre_counts = df.groupby('genre').count()['message']
     genre_names = list(genre_counts.index)
-    
+
+    # Get the total of messages per category
+    freq = pd.DataFrame(df.iloc[:,4:].sum(axis = 0, skipna = True))
+    # Convert column names to string
+    freq.columns  = freq.columns.astype(str)
+    # Reset index
+    freq.reset_index(level=0, inplace=True)
+    # Rename column names
+    freq.rename(columns = { 'index': 'Category','0': 'Count'}, inplace=True)
+    # Assign column to variable
+    category_names = freq['Category']
+    category_count = freq['Count']
+
     # create visuals
     # TODO: Below is an example - modify to create your own visuals
     graphs = [
@@ -61,6 +73,24 @@ def index():
                 },
                 'xaxis': {
                     'title': "Genre"
+                }
+            }
+        },
+        {
+            'data': [
+                Bar(
+                    x=category_names,
+                    y=category_count
+                )
+            ],
+
+            'layout': {
+                'title': 'Distribution of Message Categories',
+                'yaxis': {
+                    'title': "Count"
+                },
+                'xaxis': {
+                    'title': "Category"
                 }
             }
         }
