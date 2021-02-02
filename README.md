@@ -39,6 +39,5 @@ The project includes a web app where an emergency worker can input a new message
 
 
 ### Resources
-https://stackoverflow.com/questions/6718633/python-regular-expression-again-match-url
 https://gist.github.com/gruber/8891611
 https://www.geeksforgeeks.org/removing-stop-words-nltk-python/
