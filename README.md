@@ -3,7 +3,7 @@
 ### Project Summary:
 In this project, I applied the skills to analyze disaster data from Figure Eight to build a model for an API that classifies disaster messages.
 
-Using the datasets I created a machine learning pipeline to categorize these events so that I can send the messages to an appropriate disaster relief agency.
+Using the datasets, I created a machine learning pipeline to categorize these events so that I can send the messages to an appropriate disaster relief agency.
 
 The project includes a web app where an emergency worker can input a new message and get classification results in several categories. The web app will also display visualizations of the data. 
 
@@ -39,6 +39,5 @@ The project includes a web app where an emergency worker can input a new message
 
 
 ### Resources
-https://stackoverflow.com/questions/6718633/python-regular-expression-again-match-url
 https://gist.github.com/gruber/8891611
 https://www.geeksforgeeks.org/removing-stop-words-nltk-python/
