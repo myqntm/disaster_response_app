@@ -40,6 +40,8 @@ def clean_data(df):
         categories[column] = categories[column].str[-1]
     # Change type string to numeric
         categories[column] = categories[column].astype(np.int)
+    # Recode 2's in related column to 1
+    categories['related'] = categories['related'].replace([2],1)
     # Drop old category olumn
     df = df.drop(['categories'], axis=1)
     # Concatenate df with new split categories

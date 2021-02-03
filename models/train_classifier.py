@@ -11,8 +11,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import GridSearchCV
 from nltk.tokenize import word_tokenize
 from sklearn.metrics import classification_report
-
-
+import pickle
 
 
 def load_data(database_filepath):
